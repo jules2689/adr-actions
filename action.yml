@@ -19,9 +19,11 @@ runs:
   using: "composite"
   steps:
     - name: Clone ADR Tools
+      shell: bash
       run: git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} adr-tools
 
     - name: Install Graphviz
+      shell: bash
       run: |
         if [[ "$OSTYPE" == "darwin"* ]]; then
           brew install graphviz
@@ -65,7 +67,7 @@ runs:
       shell: bash
       run: |
         commit_message='Update ADR TOC'
-        repo_auth="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+        repo_auth="${{ github.actor }}:${{ inputs.github_token }}"
         repo_name="${{ github.repository }}"
         ref="${{ github.ref }}"
         adr_dir="${{ steps.adr_var.outputs.adr_dir }}/*"
