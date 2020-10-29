@@ -1,7 +1,7 @@
 ADR Action
 ---
 
-Action to generate ADR Table of Contents and ADR Graph dependency into a README.md in the ADR dir.
+Action to generate [Architecture Decision Records](https://adr.github.io/) Table of Contents and ADR Graph dependency into a README.md in the ADR dir.
 
 To Setup
 ---
