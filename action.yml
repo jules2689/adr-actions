@@ -30,10 +30,10 @@ runs:
         else
           sudo apt-get install graphviz
         fi
-
-    - name: Run ADR Tools
+        
+    - name: Set ADR Dir Input
+      id: adr-var
       run: |
-        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
         ADR_DIR = "${{ inputs.adr-dir }}"
         if [ -z "$ADR_DIR" && -f .adr-dir ]
         then
@@ -42,8 +42,14 @@ runs:
           echo '.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
           exit 1
         fi
+        echo "::set-output name=adr_dir::$ADR_DIR"
 
-        pushd $ADR_DIR
+    - name: Run ADR Tools
+      run: |
+        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+      
+
+        pushd ${{ steps.adr_var.outputs.adr_dir }}
 
         # Generate Graph of ADRs
         "$DIR/adr-tools/src/adr" generate graph | dot -Tpng > graph.png
@@ -57,8 +63,28 @@ runs:
 
     - name: Commit ADR TOC
       run: |
-        .github/support/commit.sh "Update ADR TOC" \
-          "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
-          "${{ github.repository }}" \
-          ${{ github.ref }} \
-          "${{ inputs.adr-dir }}/*"
+        commit_message='Update ADR TOC'
+        repo_auth="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+        repo_name="${{ github.repository }}"
+        ref="${{ github.ref }}"
+        adr_dir="${{ steps.adr_var.outputs.adr_dir }}/*"
+        
+
+        remote_repo="https://${repo_auth}@github.com/${repo_name}.git"
+
+        echo "Committing : ${commit_message}"
+        echo "Push ${adr_dir} to branch ${ref} in repo ${remote_repo}"
+        echo "=================================="
+        echo "Setting Config for Git"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        echo "=================================="
+
+        if [ -z "$(git status --porcelain)" ]; then 
+          echo "Nothing to commit, exiting"
+          exit 0
+        fi
+
+        git add -f "${adr_dir}"
+        git commit -m "${commit_message}"
+        git push "${remote_repo}" "HEAD:${ref}" --follow-tags
