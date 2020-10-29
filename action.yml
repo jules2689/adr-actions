@@ -35,7 +35,7 @@ runs:
       id: adr-var
       shell: bash
       run: |
-        ADR_DIR = "${{ inputs.adr-dir }}"
+        ADR_DIR="${{ inputs.adr-dir }}"
         if [ -z "$ADR_DIR" && -f .adr-dir ]
         then
           ADR_DIR="$(cat .adr-dir)"
