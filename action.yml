@@ -17,9 +17,7 @@ inputs:
 
 runs:
   using: "composite"
-  steps: 
-    - uses: actions/checkout@v2
-
+  steps:
     - name: Clone ADR Tools
       run: git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} adr-tools
 
