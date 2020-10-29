@@ -43,15 +43,15 @@ runs:
           echo '.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
           exit 1
         fi
-        echo "::set-output name=adr_dir::$ADR_DIR"
+        echo "Setting ADR DIR to $ADR_DIR"
+        echo "::set-output name=ADR_DIR::$ADR_DIR"
 
     - name: Run ADR Tools
       shell: bash
       run: |
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
       
-
-        pushd ${{ steps.adr_var.outputs.adr_dir }}
+        pushd ${{ steps.adr-var.outputs.ADR_DIR }}
 
         # Generate Graph of ADRs
         "$DIR/adr-tools/src/adr" generate graph | dot -Tpng > graph.png
@@ -70,7 +70,7 @@ runs:
         repo_auth="${{ github.actor }}:${{ inputs.github_token }}"
         repo_name="${{ github.repository }}"
         ref="${{ github.ref }}"
-        adr_dir="${{ steps.adr_var.outputs.adr_dir }}/*"
+        adr_dir="${{ steps.adr-var.outputs.ADR_DIR }}/*"
         
 
         remote_repo="https://${repo_auth}@github.com/${repo_name}.git"
