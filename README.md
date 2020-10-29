@@ -12,4 +12,5 @@ To Setup
     adr-dir: '' # Optional. Directory in which ADRs are located. Defaults to contents of .adr-dir
     adr-tool-repo: 'https://github.com/npryce/adr-tools.git' # Optional. ADR Tool Repo location 
     adr-tool-version: '3.0.0' # Optional. Version of the Tools to use.
+    github-token: '' # Optional. Token with which to commit
 ```
