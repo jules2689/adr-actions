@@ -20,7 +20,10 @@ runs:
   steps:
     - name: Clone ADR Tools
       shell: bash
-      run: git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} adr-tools
+      run: |
+        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+        echo "Cloning ADR tools to $DIR/adr-tools"
+        git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
 
     - name: Install Graphviz
       shell: bash
