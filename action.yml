@@ -14,6 +14,10 @@ inputs:
     description: 'Version from the ADR Tools Repo'
     required: false
     default: '3.0.0'
+  github_token:
+    description: 'GitHub token to use to commit to the repo"
+    required: false
+    default: '' 
 
 runs:
   using: "composite"
