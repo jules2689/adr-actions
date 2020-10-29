@@ -33,6 +33,7 @@ runs:
         
     - name: Set ADR Dir Input
       id: adr-var
+      shell: bash
       run: |
         ADR_DIR = "${{ inputs.adr-dir }}"
         if [ -z "$ADR_DIR" && -f .adr-dir ]
@@ -45,6 +46,7 @@ runs:
         echo "::set-output name=adr_dir::$ADR_DIR"
 
     - name: Run ADR Tools
+      shell: bash
       run: |
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
       
@@ -62,6 +64,7 @@ runs:
         popd
 
     - name: Commit ADR TOC
+      shell: bash
       run: |
         commit_message='Update ADR TOC'
         repo_auth="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
