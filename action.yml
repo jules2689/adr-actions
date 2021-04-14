@@ -60,6 +60,8 @@ runs:
       
         echo "Changing directory to ${{ steps.adr-var.outputs.ADR_DIR }}"
         pushd ${{ steps.adr-var.outputs.ADR_DIR }}
+        pwd
+        ls -al
 
         # Generate Graph of ADRs
         echo "Generating Graph"
