@@ -102,26 +102,24 @@ runs:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
             exit(1)
     
-    - name: Specify if ADR Tools will run
-      run:
-        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" == "true" ]; then
-          echo "ADR Tools will run because ${{ steps.branch.outputs.BRANCH_NAME }} is in the allow list ${{ inputs.generate-toc-branches }}"
-        else
-          echo "ADR Tools will NOT run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
-        fi
-
     - name: Clone ADR Tools
-      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
         echo "Cloning ADR tools to $DIR/adr-tools"
         git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
 
     - name: Install Graphviz
-      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
         if [[ "$OSTYPE" == "darwin"* ]]; then
           brew install graphviz
         else
@@ -129,9 +127,12 @@ runs:
         fi           
 
     - name: Run ADR Tools
-      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
       
         echo "Changing directory to ${{ steps.adr-var.outputs.ADR_DIR }}"
@@ -152,9 +153,12 @@ runs:
         popd
 
     - name: Commit ADR TOC
-      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
         commit_message='Update ADR TOC'
         repo_auth="${{ github.actor }}:${{ inputs.github_token }}"
         repo_name="${{ github.repository }}"
