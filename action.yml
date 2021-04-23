@@ -110,11 +110,11 @@ runs:
     - name: Clone ADR Tools
       shell: bash
       run: |
-        echo "::group::Clone ADR Tools"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "Clone ADR Tools: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
+        echo "::group::Clone ADR Tools"
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
         echo "Cloning ADR tools to $DIR/adr-tools"
         git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
@@ -122,11 +122,11 @@ runs:
     - name: Install Graphviz
       shell: bash
       run: |
-        echo "::group::Install Graphviz"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "Install Graphviz: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
+        echo "::group::Install Graphviz"
         if [[ "$OSTYPE" == "darwin"* ]]; then
           brew install graphviz
         else
@@ -136,11 +136,11 @@ runs:
     - name: Run ADR Tools
       shell: bash
       run: |
-        echo "::group::Run ADR Tools to generate TOC and graph"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "Run ADR Tools: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
+        echo "::group::Run ADR Tools to generate TOC and graph"
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
       
         echo "Changing directory to ${{ steps.adr-var.outputs.ADR_DIR }}"
@@ -163,11 +163,11 @@ runs:
     - name: Commit ADR TOC
       shell: bash
       run: |
-        echo "::group::Commit ADR TOC Changes"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "Commit ADR TOC: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
+        echo "::group::Commit ADR TOC Changes"
         commit_message='Update ADR TOC'
         repo_auth="${{ github.actor }}:${{ inputs.github_token }}"
         repo_name="${{ github.repository }}"
