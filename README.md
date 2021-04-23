@@ -27,8 +27,7 @@ This action also does some basic linting to:
 name: ADR
 
 on:
-  push:
-    branches: [main, master]
+  push: {} # Run on everything, restrict TOC generateion with 'generate-toc-branches'
 
 jobs:
   generate_adr_toc:
