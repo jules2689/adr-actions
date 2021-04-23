@@ -63,8 +63,8 @@ runs:
         numbers = map(lambda md: md.split('-')[0], markdowns)
         duplicates = [item for item, count in collections.Counter(numbers).items() if count > 1]
         if len(duplicates) > 0:
-          print("ADRs had duplicate numbers:")
-          print(duplicates)
+          error_message = "::error::ADRs had duplicate numbers: {}".format(duplicates)
+          print(error_message)
           exit(1)
         else:
           print("No duplicates detected")
@@ -85,7 +85,7 @@ runs:
           first_line = open(md).readline()
           found_title = re.search(r"^# \d+\.", first_line)
           if found_title == None:
-            print("No title found in {}".format(md))
+            print("::error::No title found in {}".format(md))
             exit(1)
 
     - name: Make sure all ADR numbers match the title
@@ -105,7 +105,7 @@ runs:
           found_title = re.search(r"^# (\d+)\.", title)
           title_number = int(found_title.group(1))
           if number != title_number:
-            print("ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
+            print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
             exit(1)             
 
     - name: Run ADR Tools
