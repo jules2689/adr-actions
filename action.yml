@@ -1,7 +1,11 @@
-name: 'Generate ADR TOC'
-description: 'Generates the Table of Contents for ADRs'
+name: 'Lint ADRs and Generate ADR TOC'
+description: 'Lints ADRs on branches and generates the Table of Contents for ADRs on specified'
 
 inputs:
+  generate-toc-branches:
+    description: 'Branches on which we will generate TOC'
+    required: false
+    default: [main, master]
   adr-dir:
     description: 'Directory of the ADR'
     required: false
@@ -22,21 +26,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Clone ADR Tools
-      shell: bash
-      run: |
-        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-        echo "Cloning ADR tools to $DIR/adr-tools"
-        git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
-
-    - name: Install Graphviz
-      shell: bash
-      run: |
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          brew install graphviz
-        else
-          sudo apt-get install graphviz
-        fi
         
     - name: Set ADR Dir Input
       id: adr-var
@@ -47,11 +36,16 @@ runs:
         then
           ADR_DIR="$(cat .adr-dir)"
         else
-          echo '.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
+          echo '::error::.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
           exit 1
         fi
         echo "Setting ADR DIR to $ADR_DIR"
         echo "::set-output name=ADR_DIR::$ADR_DIR"
+
+    - name: Extract branch name
+      shell: bash
+      id: branch
+      run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')"
 
     - name: Make sure we dont duplicate ADR numbers
       shell: python
@@ -106,9 +100,36 @@ runs:
           title_number = int(found_title.group(1))
           if number != title_number:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
-            exit(1)             
+            exit(1)
+    
+    - name: Specify if ADR Tools will run
+      run:
+        if [ "${{ contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME) }}" == "true" ]; then
+          echo "ADR Tools will run because ${{ steps.branch.outputs.BRANCH_NAME }} is in the allow list ${{ inputs.generate-toc-branches }}"
+        else
+          echo "ADR Tools will NOT run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+        fi
+
+    - name: Clone ADR Tools
+      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      shell: bash
+      run: |
+        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+        echo "Cloning ADR tools to $DIR/adr-tools"
+        git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
+
+    - name: Install Graphviz
+      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      shell: bash
+      run: |
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          brew install graphviz
+        else
+          sudo apt-get install graphviz
+        fi           
 
     - name: Run ADR Tools
+      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -131,6 +152,7 @@ runs:
         popd
 
     - name: Commit ADR TOC
+      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         commit_message='Update ADR TOC'

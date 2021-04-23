@@ -13,4 +13,5 @@ To Setup
     adr-tool-repo: 'https://github.com/npryce/adr-tools.git' # Optional. ADR Tool Repo location 
     adr-tool-version: '3.0.0' # Optional. Version of the Tools to use.
     github-token: '' # Optional. Token with which to commit
+    generate-toc-branches: [main, master] # Optional: Array of Strings. specify which branches we should generate TOC on. Defaults to main/master. 
 ```
