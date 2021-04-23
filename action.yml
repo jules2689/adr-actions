@@ -87,8 +87,7 @@ runs:
             print("::error::No title found in {}".format(md))
             print("::endgroup::")
             exit(1)
-          else:
-            print("::endgroup::")
+        print("::endgroup::")
 
     - name: Make sure all ADR numbers match the title
       shell: python
@@ -112,8 +111,7 @@ runs:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
             print("::endgroup::")
             exit(1)
-          else:
-            print("::endgroup::")
+        print("::endgroup::")
     
     - name: Clone ADR Tools
       shell: bash
