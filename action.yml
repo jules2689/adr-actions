@@ -60,9 +60,11 @@ runs:
         if len(duplicates) > 0:
           error_message = "::error::ADRs had duplicate numbers: {}".format(duplicates)
           print(error_message)
+          print("::endgroup::)
           exit(1)
         else:
           print("No duplicates detected")
+          print("::endgroup::)
           exit(0)
 
     - name: Make sure all ADRs have titles
@@ -83,7 +85,10 @@ runs:
           found_title = re.search(r"^# \d+\.", first_line)
           if found_title == None:
             print("::error::No title found in {}".format(md))
+            print("::endgroup::)
             exit(1)
+          else:
+            print("::endgroup::)
 
     - name: Make sure all ADR numbers match the title
       shell: python
@@ -105,7 +110,10 @@ runs:
           title_number = int(found_title.group(1))
           if number != title_number:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
+            print("::endgroup::)
             exit(1)
+          else:
+            print("::endgroup::)
     
     - name: Clone ADR Tools
       shell: bash
@@ -118,6 +126,7 @@ runs:
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
         echo "Cloning ADR tools to $DIR/adr-tools"
         git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
+        echo "::endgroup::"
 
     - name: Install Graphviz
       shell: bash
@@ -131,7 +140,8 @@ runs:
           brew install graphviz
         else
           sudo apt-get install graphviz
-        fi           
+        fi
+        echo "::endgroup::"      
 
     - name: Run ADR Tools
       shell: bash
@@ -159,6 +169,7 @@ runs:
         echo -e '\n\n## Dependency Graph of ADRs\n\n![ADR Graph Dependency](graph.png)' >> README.md
 
         popd
+        echo "::endgroup::"
 
     - name: Commit ADR TOC
       shell: bash
@@ -193,3 +204,4 @@ runs:
         git add -f "${adr_dir}"
         git commit -m "${commit_message}"
         git push "${remote_repo}" "HEAD:${ref}" --follow-tags
+        echo "::endgroup::"
