@@ -112,7 +112,7 @@ runs:
       run: |
         echo "::group::Clone ADR Tools"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -124,7 +124,7 @@ runs:
       run: |
         echo "::group::Install Graphviz"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -138,7 +138,7 @@ runs:
       run: |
         echo "::group::Run ADR Tools to generate TOC and graph"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -165,7 +165,7 @@ runs:
       run: |
         echo "::group::Commit ADR TOC Changes"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
-          echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
+          echo "This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
         fi
         commit_message='Update ADR TOC'
