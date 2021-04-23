@@ -3,6 +3,11 @@ ADR Action
 
 Action to generate [Architecture Decision Records](https://adr.github.io/) Table of Contents and ADR Graph dependency into a README.md in the ADR dir.
 
+This action also does some basic linting to:
+- Ensure no duplicate numbering of ADRs
+- ADR numbers in the filename (`0005-file.md`) matches the title (`# 5. Title`)
+- Add ADRs have titles (`# Number. Title`) as the first line
+
 ## Usage
 ---
 
