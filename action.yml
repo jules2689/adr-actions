@@ -60,11 +60,11 @@ runs:
         if len(duplicates) > 0:
           error_message = "::error::ADRs had duplicate numbers: {}".format(duplicates)
           print(error_message)
-          print("::endgroup::)
+          print("::endgroup::")
           exit(1)
         else:
           print("No duplicates detected")
-          print("::endgroup::)
+          print("::endgroup::")
           exit(0)
 
     - name: Make sure all ADRs have titles
@@ -85,10 +85,10 @@ runs:
           found_title = re.search(r"^# \d+\.", first_line)
           if found_title == None:
             print("::error::No title found in {}".format(md))
-            print("::endgroup::)
+            print("::endgroup::")
             exit(1)
           else:
-            print("::endgroup::)
+            print("::endgroup::")
 
     - name: Make sure all ADR numbers match the title
       shell: python
@@ -110,10 +110,10 @@ runs:
           title_number = int(found_title.group(1))
           if number != title_number:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
-            print("::endgroup::)
+            print("::endgroup::")
             exit(1)
           else:
-            print("::endgroup::)
+            print("::endgroup::")
     
     - name: Clone ADR Tools
       shell: bash
