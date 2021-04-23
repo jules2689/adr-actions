@@ -5,7 +5,7 @@ inputs:
   generate-toc-branches:
     description: 'Branches on which we will generate TOC'
     required: false
-    default: [main, master]
+    default: "['main','master']"
   adr-dir:
     description: 'Directory of the ADR'
     required: false
@@ -104,14 +104,14 @@ runs:
     
     - name: Specify if ADR Tools will run
       run:
-        if [ "${{ contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME) }}" == "true" ]; then
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" == "true" ]; then
           echo "ADR Tools will run because ${{ steps.branch.outputs.BRANCH_NAME }} is in the allow list ${{ inputs.generate-toc-branches }}"
         else
           echo "ADR Tools will NOT run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
         fi
 
     - name: Clone ADR Tools
-      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -119,7 +119,7 @@ runs:
         git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
 
     - name: Install Graphviz
-      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -129,7 +129,7 @@ runs:
         fi           
 
     - name: Run ADR Tools
-      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -152,7 +152,7 @@ runs:
         popd
 
     - name: Commit ADR TOC
-      if: contains(inputs.generate-toc-branches, steps.branch.outputs.BRANCH_NAME)
+      if: contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME)
       shell: bash
       run: |
         commit_message='Update ADR TOC'
