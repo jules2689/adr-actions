@@ -51,6 +51,7 @@ runs:
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::Duplicate ADR Number Check")
         import glob
         import collections
         markdowns = glob.glob("*.md")
@@ -68,6 +69,7 @@ runs:
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::ADR Title Check")
         import glob
         import collections
         import re
@@ -75,6 +77,7 @@ runs:
         for md in markdowns:
           if md == "README.md":
             continue
+          print("Checking {}".format(md))
           # Get first line of the markdown
           first_line = open(md).readline()
           found_title = re.search(r"^# \d+\.", first_line)
@@ -86,6 +89,7 @@ runs:
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::ADR Title/Number Match Check")
         import glob
         import collections
         import re
@@ -93,6 +97,7 @@ runs:
         for md in markdowns:
           if md == "README.md":
             continue
+          print("Checking {}".format(md))
           number = md.split('-')[0]
           number = int(number)
           title = open(md).readline()
@@ -105,6 +110,7 @@ runs:
     - name: Clone ADR Tools
       shell: bash
       run: |
+        echo "::group::Clone ADR Tools"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
           echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
@@ -116,6 +122,7 @@ runs:
     - name: Install Graphviz
       shell: bash
       run: |
+        echo "::group::Install Graphviz"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
           echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
@@ -129,6 +136,7 @@ runs:
     - name: Run ADR Tools
       shell: bash
       run: |
+        echo "::group::Run ADR Tools to generate TOC and graph"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
           echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
@@ -155,6 +163,7 @@ runs:
     - name: Commit ADR TOC
       shell: bash
       run: |
+        echo "::group::Commit ADR TOC Changes"
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
           echo "This step will not run because ${{ steps.branch.outputs.BRANCH_NAME }} is not in the allow list ${{ inputs.generate-toc-branches }}"
           exit 0
