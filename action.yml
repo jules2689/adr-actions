@@ -53,6 +53,61 @@ runs:
         echo "Setting ADR DIR to $ADR_DIR"
         echo "::set-output name=ADR_DIR::$ADR_DIR"
 
+    - name: Make sure we dont duplicate ADR numbers
+      shell: python
+      working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
+      run: |
+        import glob
+        import collections
+        markdowns = glob.glob("*.md")
+        numbers = map(lambda md: md.split('-')[0], markdowns)
+        duplicates = [item for item, count in collections.Counter(numbers).items() if count > 1]
+        if len(duplicates) > 0:
+          print("ADRs had duplicate numbers:")
+          print(duplicates)
+          exit(1)
+        else:
+          print("No duplicates detected")
+          exit(0)
+
+    - name: Make sure all ADRs have titles
+      shell: python
+      working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
+      run: |
+        import glob
+        import collections
+        import re
+        markdowns = glob.glob("*.md")
+        for md in markdowns:
+          if md == "README.md":
+            continue
+          # Get first line of the markdown
+          first_line = open(md).readline()
+          found_title = re.search(r"^# \d+\.", first_line)
+          if found_title == None:
+            print("No title found in {}".format(md))
+            exit(1)
+
+    - name: Make sure all ADR numbers match the title
+      shell: python
+      working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
+      run: |
+        import glob
+        import collections
+        import re
+        markdowns = glob.glob("*.md")
+        for md in markdowns:
+          if md == "README.md":
+            continue
+          number = md.split('-')[0]
+          number = int(number)
+          title = open(md).readline()
+          found_title = re.search(r"^# (\d+)\.", title)
+          title_number = int(found_title.group(1))
+          if number != title_number:
+            print("ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
+            exit(1)             
+
     - name: Run ADR Tools
       shell: bash
       run: |
