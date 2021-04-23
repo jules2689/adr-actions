@@ -1,7 +1,11 @@
-name: 'Generate ADR TOC'
-description: 'Generates the Table of Contents for ADRs'
+name: 'Lint ADRs and Generate ADR TOC'
+description: 'Lints ADRs on branches and generates the Table of Contents for ADRs on specified'
 
 inputs:
+  generate-toc-branches:
+    description: 'Branches on which we will generate TOC'
+    required: false
+    default: "['main','master']"
   adr-dir:
     description: 'Directory of the ADR'
     required: false
@@ -22,21 +26,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Clone ADR Tools
-      shell: bash
-      run: |
-        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-        echo "Cloning ADR tools to $DIR/adr-tools"
-        git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
-
-    - name: Install Graphviz
-      shell: bash
-      run: |
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-          brew install graphviz
-        else
-          sudo apt-get install graphviz
-        fi
         
     - name: Set ADR Dir Input
       id: adr-var
@@ -47,16 +36,22 @@ runs:
         then
           ADR_DIR="$(cat .adr-dir)"
         else
-          echo '.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
+          echo '::error::.adr-dir file doesnt exist, and no adr-dir input was given into the action. Please define one'
           exit 1
         fi
         echo "Setting ADR DIR to $ADR_DIR"
         echo "::set-output name=ADR_DIR::$ADR_DIR"
 
+    - name: Extract branch name
+      shell: bash
+      id: branch
+      run: echo "::set-output name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')"
+
     - name: Make sure we dont duplicate ADR numbers
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::Duplicate ADR Number Check")
         import glob
         import collections
         markdowns = glob.glob("*.md")
@@ -65,15 +60,18 @@ runs:
         if len(duplicates) > 0:
           error_message = "::error::ADRs had duplicate numbers: {}".format(duplicates)
           print(error_message)
+          print("::endgroup::")
           exit(1)
         else:
           print("No duplicates detected")
+          print("::endgroup::")
           exit(0)
 
     - name: Make sure all ADRs have titles
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::ADR Title Check")
         import glob
         import collections
         import re
@@ -81,17 +79,21 @@ runs:
         for md in markdowns:
           if md == "README.md":
             continue
+          print("Checking {}".format(md))
           # Get first line of the markdown
           first_line = open(md).readline()
           found_title = re.search(r"^# \d+\.", first_line)
           if found_title == None:
             print("::error::No title found in {}".format(md))
+            print("::endgroup::")
             exit(1)
+        print("::endgroup::")
 
     - name: Make sure all ADR numbers match the title
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
       run: |
+        print("::group::ADR Title/Number Match Check")
         import glob
         import collections
         import re
@@ -99,6 +101,7 @@ runs:
         for md in markdowns:
           if md == "README.md":
             continue
+          print("Checking {}".format(md))
           number = md.split('-')[0]
           number = int(number)
           title = open(md).readline()
@@ -106,11 +109,46 @@ runs:
           title_number = int(found_title.group(1))
           if number != title_number:
             print("::error:: \ADR number '{}' in the filename '{}' does not match title '{}'".format(number, md, title))
-            exit(1)             
+            print("::endgroup::")
+            exit(1)
+        print("::endgroup::")
+    
+    - name: Clone ADR Tools
+      shell: bash
+      run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "Clone ADR Tools: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
+        echo "::group::Clone ADR Tools"
+        DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+        echo "Cloning ADR tools to $DIR/adr-tools"
+        git clone --depth 1 --branch ${{ inputs.adr-tool-version }} --single-branch ${{ inputs.adr-tool-repo }} "$DIR/adr-tools"
+        echo "::endgroup::"
+
+    - name: Install Graphviz
+      shell: bash
+      run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "Install Graphviz: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
+        echo "::group::Install Graphviz"
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+          brew install graphviz
+        else
+          sudo apt-get install graphviz
+        fi
+        echo "::endgroup::"      
 
     - name: Run ADR Tools
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "Run ADR Tools: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
+        echo "::group::Run ADR Tools to generate TOC and graph"
         DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
       
         echo "Changing directory to ${{ steps.adr-var.outputs.ADR_DIR }}"
@@ -129,10 +167,16 @@ runs:
         echo -e '\n\n## Dependency Graph of ADRs\n\n![ADR Graph Dependency](graph.png)' >> README.md
 
         popd
+        echo "::endgroup::"
 
     - name: Commit ADR TOC
       shell: bash
       run: |
+        if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
+          echo "Commit ADR TOC: This step will not run because '${{ steps.branch.outputs.BRANCH_NAME }}' is not in the allow list ${{ inputs.generate-toc-branches }}"
+          exit 0
+        fi
+        echo "::group::Commit ADR TOC Changes"
         commit_message='Update ADR TOC'
         repo_auth="${{ github.actor }}:${{ inputs.github_token }}"
         repo_name="${{ github.repository }}"
@@ -158,3 +202,4 @@ runs:
         git add -f "${adr_dir}"
         git commit -m "${commit_message}"
         git push "${remote_repo}" "HEAD:${ref}" --follow-tags
+        echo "::endgroup::"
