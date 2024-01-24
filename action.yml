@@ -2,6 +2,10 @@ name: 'Lint ADRs and Generate ADR TOC'
 description: 'Lints ADRs on branches and generates the Table of Contents for ADRs on specified'
 
 inputs:
+  generate-toc:
+    description: 'Should generate TOC'
+    required: false
+    default: true
   generate-toc-branches:
     description: 'Branches on which we will generate TOC'
     required: false
@@ -114,6 +118,7 @@ runs:
         print("::endgroup::")
     
     - name: Clone ADR Tools
+      if: ${{ inputs.generate-toc }}
       shell: bash
       run: |
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
@@ -127,6 +132,7 @@ runs:
         echo "::endgroup::"
 
     - name: Install Graphviz
+      if: ${{ inputs.generate-toc }}
       shell: bash
       run: |
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
@@ -142,6 +148,7 @@ runs:
         echo "::endgroup::"      
 
     - name: Run ADR Tools
+      if: ${{ inputs.generate-toc }}
       shell: bash
       run: |
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
@@ -175,6 +182,7 @@ and serves as more of a good starting point for the types of things you may want
         echo "::endgroup::"
 
     - name: Commit ADR TOC
+      if: ${{ inputs.generate-toc }}
       shell: bash
       run: |
         if [ "${{ contains(fromJSON(inputs.generate-toc-branches), steps.branch.outputs.BRANCH_NAME) }}" != "true" ]; then
