@@ -40,13 +40,13 @@ runs:
           exit 1
         fi
         echo "Setting ADR DIR to $ADR_DIR"
-        echo "::set-output name=ADR_DIR::$ADR_DIR"
+        echo "ADR_DIR=$ADR_DIR" >> "$GITHUB_OUTPUT"
 
     - name: Extract branch name
       shell: bash
       id: branch
-      run: echo "::set-output name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')"
-
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')" >> "$GITHUB_OUTPUT"
+      
     - name: Make sure we dont duplicate ADR numbers
       shell: python
       working-directory: ${{ steps.adr-var.outputs.ADR_DIR }}
