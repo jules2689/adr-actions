@@ -46,6 +46,7 @@ runs:
       shell: bash
       id: branch
       run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//_/g')" >> "$GITHUB_OUTPUT"
+
       
     - name: Make sure we dont duplicate ADR numbers
       shell: python
